@@ -1,0 +1,12 @@
+// See https://aka.ms/new-console-template for more information
+using System.Security.Cryptography;
+using System.Text;
+string msg="abc"; // Băm một chiều
+byte[] bytes=Encoding.ASCII.GetBytes(msg);
+// HashAlgorithm hash=MD5.Create();
+// HashAlgorithm hash=SHA1.Create();
+// HashAlgorithm hash=SHA256.Create();
+HashAlgorithm hash=SHA512.Create();
+byte[] result=hash.ComputeHash(bytes);
+string s=Convert.ToHexString(result);
+System.Console.WriteLine("Output: "+s);
