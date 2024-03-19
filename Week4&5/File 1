@@ -1,0 +1,152 @@
+using System.Text;
+
+// 1
+/*
+string m="abc";
+byte[] arr=Encoding.ASCII.GetBytes(m);
+System.Console.WriteLine(string.Join(",",arr));
+*/
+
+// Function
+uint ShiftLeft(uint v,int s)
+{
+    return (v<<s) | (v>>(32-s));
+}
+
+uint F(uint a, uint b, uint c, uint d, uint x, int s)
+{
+    uint t=a+((b&c) | (~b&d)) +x;
+    return ShiftLeft(t,s);
+}
+
+uint G(uint a, uint b, uint c, uint d, uint x, int s)
+{
+    uint t=a+ ((b&c) | (b&d) | (c&d)) + x + 0x5a827999;
+    return ShiftLeft(t,s);
+}
+
+uint H(uint a, uint b, uint c, uint d, uint x, int s)
+{
+    uint t=a+(b^c^d) + x + 0x6ed9eba1;
+    return ShiftLeft(t,s);
+}
+
+
+// 2
+/*
+string m="abc";
+byte[] arr=Encoding.ASCII.GetBytes(m);
+System.Console.WriteLine(string.Join(",",arr));
+byte[] brr=new byte[64];
+Array.Copy(arr,brr,arr.Length);
+System.Console.WriteLine(string.Join(",",brr));
+*/
+
+
+// 3
+/*
+string m="abc";
+byte[] arr=Encoding.ASCII.GetBytes(m);
+System.Console.WriteLine(string.Join(",",arr));
+byte[] brr=new byte[64];
+Array.Copy(arr,brr,arr.Length);
+//System.Console.WriteLine(string.Join(",",brr));
+long len=arr.LongLength;
+brr[len]=0x80; // brr[len]=128
+System.Console.WriteLine(string.Join(",",brr));
+*/
+
+
+// 4
+/*
+string m="abc";
+byte[] arr=Encoding.ASCII.GetBytes(m);
+System.Console.WriteLine(string.Join(",",arr));
+byte[] brr=new byte[64];
+Array.Copy(arr,brr,arr.Length);
+long len=arr.LongLength;
+brr[len]=0x80; // brr[len]=128
+byte[] crr=BitConverter.GetBytes(len*8L);
+Array.Copy(crr,0,brr,56,crr.Length);
+System.Console.WriteLine(string.Join(",",brr));
+*/
+
+
+// 5
+string m="abc";
+byte[] arr=Encoding.ASCII.GetBytes(m);
+System.Console.WriteLine(string.Join(",",arr));
+byte[] brr=new byte[64];
+Array.Copy(arr,brr,arr.Length);
+long len=arr.LongLength;
+brr[len]=0x80; // brr[len]=128
+byte[] crr=BitConverter.GetBytes(len*8L);
+Array.Copy(crr,0,brr,56,crr.Length);
+
+uint[] X= new uint[brr.Length/4];
+int c=0;
+for (int i=0;i<X.Length;i++)
+{
+    X[i]=( (uint)brr[c++] | (uint)brr[c++]<<8) | ((uint)brr[c++]<<16) | ((uint)brr[c++]<<24);
+}
+System.Console.WriteLine(string.Join(",",X));
+
+
+// Use F function
+uint[] word={0X67452301,0xefcdab89,0x98badcfe,0x10325476};
+uint[] h=new uint[word.Length];
+Array.Copy(word,h,word.Length);
+int[] S={3,7,11,19};
+
+for (int i=0;i<16;i++)
+{
+    int t=-(i%4)+4;
+    h[t%4]=F(h[t%4], h[(t+1)%4], h[(t+2)%4], h[(t+3)%4], X[i], S[i%4]);
+}
+System.Console.WriteLine("F: "+String.Join(",",h));
+
+
+// Use G function
+uint[] step={0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15};
+S=new int[] {3,5,9,13};
+
+for (int i=0;i<16;i++)
+{
+    int t=-(i%4)+4;
+    h[t%4]=G(h[t%4], h[(t+1)%4], h[(t+2)%4], h[(t+3)%4], X[step[i]], S[i%4]);
+}
+System.Console.WriteLine("G: "+String.Join(",",h));
+
+
+// Use H function
+step= new uint[] {0,8,4,12,2,10,6,14,1,9,5,13,3,11,7,15};
+S=new int[] {3,9,11,15};
+for (int i=0;i<16;i++)
+{
+    int t=-(i%4)+4;
+    h[t%4]=H(h[t%4], h[(t+1)%4], h[(t+2)%4], h[(t+3)%4], X[step[i]], S[i%4]);
+}
+System.Console.WriteLine("H: "+String.Join(",",h));
+
+
+for (int i=0;i<h.Length;i++)
+{
+    h[i]=h[i]+word[i];
+}
+System.Console.WriteLine("h: "+string.Join(",",h));
+
+
+
+// Continue
+byte[] result= new byte[h.Length*4];
+for (int i=0;i<h.Length;i++)
+{
+    byte[] b=BitConverter.GetBytes(h[i]);
+    Array.Copy(b,0,result,4*i,b.Length);
+}
+System.Console.WriteLine("result: "+string.Join(",",result));
+
+
+// Continue
+string s=Convert.ToHexString(result);
+System.Console.WriteLine("Convert to HexString: "+s);
